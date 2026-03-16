@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>APEX DM Operator | Elite DM Setting Operation</title>
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c76a;
+    --dark: #0a0a0a;
+    --dark2: #111111;
+    --dark3: #1a1a1a;
+    --dark4: #222222;
+    --text: #e8e8e8;
+    --muted: #888;
+    --red: #e04040;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(10,10,10,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 0 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-size: 1.1rem; font-weight: 700; letter-spacing: 3px;
+    color: var(--gold); text-decoration: none;
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-cta {
+    background: var(--gold); color: #000;
+    padding: 0.5rem 1.2rem; border-radius: 4px;
+    text-decoration: none; font-size: 0.8rem;
+    font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--gold-light); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 5% 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(201,168,76,0.07) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.15;
+    max-width: 820px;
+    margin: 0 auto 1.5rem;
+    letter-spacing: -1px;
+  }
+  .hero h1 .gold { color: var(--gold); }
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--muted);
+    max-width: 580px;
+    margin: 0 auto 2.5rem;
+  }
+  .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--gold); color: #000;
+    padding: 0.9rem 2rem; border-radius: 5px;
+    text-decoration: none; font-weight: 700;
+    font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-outline {
+    border: 1px solid rgba(201,168,76,0.4); color: var(--gold);
+    padding: 0.9rem 2rem; border-radius: 5px;
+    text-decoration: none; font-weight: 600;
+    font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+
+  /* STATS BAR */
+  .stats-bar {
+    background: var(--dark3);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+    padding: 2rem 5%;
+    display: flex; justify-content: center;
+    flex-wrap: wrap; gap: 0;
+  }
+  .stat-item {
+    text-align: center;
+    padding: 0.5rem 3rem;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-size: 2rem; font-weight: 800;
+    color: var(--gold); display: block;
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-top: 0.3rem; display: block;
+  }
+
+  /* SECTION */
+  section { padding: 80px 5%; }
+  .section-label {
+    color: var(--gold); font-size: 0.75rem;
+    letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-size: clamp(1.6rem, 3vw, 2.5rem);
+    font-weight: 800; line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  .section-sub {
+    color: var(--muted); max-width: 560px;
+    font-size: 1rem; line-height: 1.7;
+  }
+
+  /* WHAT WE DO */
+  .what-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5px;
+    margin-top: 3rem;
+    border: 1.5px solid rgba(201,168,76,0.12);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .what-card {
+    background: var(--dark2);
+    padding: 2rem;
+    border-right: 1.5px solid rgba(201,168,76,0.08);
+    border-bottom: 1.5px solid rgba(201,168,76,0.08);
+    transition: background 0.2s;
+  }
+  .what-card:hover { background: var(--dark3); }
+  .card-icon {
+    font-size: 1.5rem; margin-bottom: 1rem; display: block;
+  }
+  .card-title {
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: 0.5rem; color: var(--text);
+  }
+  .card-body {
+    font-size: 0.88rem; color: var(--muted); line-height: 1.6;
+  }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: flex; flex-direction: column; gap: 0;
+    margin-top: 3rem; max-width: 700px;
+  }
+  .step {
+    display: flex; gap: 2rem; padding: 2rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    min-width: 48px; height: 48px;
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; font-weight: 800;
+    color: var(--gold); flex-shrink: 0;
+  }
+  .step-content h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .step-content p { font-size: 0.88rem; color: var(--muted); }
+
+  /* WHO IS THIS FOR */
+  .for-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem; margin-top: 3rem;
+  }
+  .for-card {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: 6px;
+    padding: 1.8rem;
+    transition: border-color 0.2s;
+  }
+  .for-card:hover { border-color: rgba(201,168,76,0.35); }
+  .for-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gold); }
+  .for-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+  /* NOT FOR */
+  .notfor-list {
+    margin-top: 1.5rem;
+    display: flex; flex-direction: column; gap: 0.7rem;
+    max-width: 500px;
+  }
+  .notfor-item {
+    display: flex; align-items: flex-start; gap: 0.7rem;
+    font-size: 0.9rem; color: var(--muted);
+  }
+  .notfor-item .x {
+    color: var(--red); font-weight: 700;
+    margin-top: 1px; flex-shrink: 0;
+  }
+
+  /* RESULTS */
+  .results-bg {
+    background: var(--dark2);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem; margin-top: 3rem;
+  }
+  .result-card {
+    background: var(--dark);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 6px;
+    padding: 1.8rem;
+  }
+  .result-num {
+    font-size: 2.2rem; font-weight: 800;
+    color: var(--gold); display: block;
+  }
+  .result-label { font-size: 0.8rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* CTA SECTION */
+  .cta-section {
+    text-align: center;
+    padding: 100px 5%;
+    background: linear-gradient(to bottom, var(--dark), var(--dark2), var(--dark));
+    position: relative;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .cta-section h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800; margin-bottom: 1rem;
+    max-width: 680px; margin: 0 auto 1rem;
+  }
+  .cta-section p {
+    color: var(--muted); max-width: 500px;
+    margin: 0 auto 2.5rem; font-size: 1rem;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 2.5rem 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-logo {
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 3px; color: var(--gold);
+  }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a {
+    font-size: 0.8rem; color: var(--muted);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-copy { font-size: 0.75rem; color: var(--muted); }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .stat-item { padding: 0.5rem 1.5rem; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .stat-item:last-child { border-bottom: none; }
+    .stats-bar { flex-direction: column; align-items: center; }
+    footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">APEX <span>DM OPERATOR</span></a>
+  <ul class="nav-links">
+    <li><a href="#what">What We Do</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#who">Who It's For</a></li>
+    <li><a href="apply.html">Apply</a></li>
+    <li><a href="dashboard.html">Operator Portal</a></li>
+  </ul>
+  <a href="apply.html" class="nav-cta">Apply Now</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-badge">DM Setting Operation • $15M+ Generated</div>
+    <h1>
+      We turn cold DMs into<br>
+      <span class="gold">high-ticket booked calls</span><br>
+      that actually show up.
+    </h1>
+    <p>
+      Built on 37 frameworks. Deployed across LinkedIn and Instagram.
+      Running for coaching companies, agency operators, and high-ticket offer owners.
+    </p>
+    <div class="hero-btns">
+      <a href="apply.html" class="btn-primary">Apply to Work With Us</a>
+      <a href="#what" class="btn-outline">See How It Works</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">$15M+</span>
+    <span class="stat-label">Revenue Generated</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">90%+</span>
+    <span class="stat-label">Show Rate Target</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">37</span>
+    <span class="stat-label">Live Frameworks</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">$8K–$20K</span>
+    <span class="stat-label">Monthly Setter Stack</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">4–6 hrs</span>
+    <span class="stat-label">Average Work Day</span>
+  </div>
+</div>
+
+<!-- WHAT WE DO -->
+<section id="what">
+  <div class="section-label">What We Do</div>
+  <h2 class="section-title">Not a call center.<br>A precision DM operation.</h2>
+  <p class="section-sub">
+    Most setter operations spray and pray. We run signal intelligence, contextual mirroring,
+    and identity-based conversation architecture. Every message has a job. Every booking is pre-sold before the call starts.
+  </p>
+  <div class="what-grid">
+    <div class="what-card">
+      <span class="card-icon">🎯</span>
+      <div class="card-title">Signal-Based Prospecting</div>
+      <div class="card-body">We read engagement signals — likes, comments, story replies, profile views — and open with emotional mirrors, not generic openers. If it could go to 10 people, we don't send it.</div>
+    </div>
+    <div class="what-card">
+      <span class="card-icon">🧠</span>
+      <div class="card-title">EAACO Conversation Architecture</div>
+      <div class="card-body">Five-stage DM framework. Engage → Assess → Assign → Call To Action → Obligation. No compressed transitions. Each stage fully worked before advancing.</div>
+    </div>
+    <div class="what-card">
+      <span class="card-icon">🔁</span>
+      <div class="card-title">Full Obligation Sequences</div>
+      <div class="card-body">Booking isn't the finish line. We run structured pre-call sequences that get prospects off the fence and locked in mentally before the call even starts. That's how you hit 90%+ show rates.</div>
+    </div>
+    <div class="what-card">
+      <span class="card-icon">📊</span>
+      <div class="card-title">Pipeline Intelligence</div>
+      <div class="card-body">CRM tracking, momentum heat mapping, and gap audits on every dead conversation. We know exactly where the funnel is leaking and what to fix before the next session.</div>
+    </div>
+    <div class="what-card">
+      <span class="card-icon">🏗️</span>
+      <div class="card-title">Setter Ramp-Up System</div>
+      <div class="card-body">4-week onboarding protocol. 10-point QC rubric. Weekly debrief submissions. We don't just hire — we build setters who can run the system independently inside 30 days.</div>
+    </div>
+    <div class="what-card">
+      <span class="card-icon">⚙️</span>
+      <div class="card-title">B2B + B2C Deployment</div>
+      <div class="card-body">Separate frameworks for consumer and business audiences. LinkedIn and Instagram primary. Twitter/X secondary. We match the platform, the prospect, and the offer — and we don't confuse the three.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background: var(--dark2); border-top: 1px solid rgba(201,168,76,0.08); border-bottom: 1px solid rgba(201,168,76,0.08);">
+  <div class="section-label">Process</div>
+  <h2 class="section-title">How the operation runs</h2>
+  <p class="section-sub">From first DM to booked call. Repeatable. Scalable. Data-driven.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Offer Foundation Check</h3>
+        <p>Before we write a single message, we run three checks: offer clarity, market-offer fit, and results proof. No amount of DM skill fixes a bad offer. We check the foundation first.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Dual-Layer PDOCS Research</h3>
+        <p>Market-level research to understand root problems, desires, and obstacles. Individual prospect research to mine their exact language. We never write openers from memory — we write them from data.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Knowledge Gap Analysis</h3>
+        <p>We identify the specific gap between what the market thinks they know and what's actually keeping them stuck. That gap becomes the backbone of every conversation in the niche.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Signal-Based Outreach</h3>
+        <p>How Hero openers. Emotional mirror openers. Signal intelligence reads. 15–20 hyper-personalized outreach messages per session. Nothing mass. Everything intentional.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <h3>EAACO Conversation Execution</h3>
+        <p>Full five-stage framework. Human Reasoning Stack runs before every reply. Prospect closes themselves — we just surface the contradictions and create permission.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-content">
+        <h3>Obligation + Show Rate Protection</h3>
+        <p>Four-touch pre-call sequence. Loom video resource. "One thing you want to walk away with" question. These three moves alone take show rate from 60% to 85%+.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" class="results-bg">
+  <div class="section-label">Track Record</div>
+  <h2 class="section-title">The numbers speak.</h2>
+  <p class="section-sub">Built on methodologies that have moved real money at scale.</p>
+  <div class="results-grid">
+    <div class="result-card">
+      <span class="result-num">$15M+</span>
+      <span class="result-label">Total Revenue Generated</span>
+    </div>
+    <div class="result-card">
+      <span class="result-num">22,911</span>
+      <span class="result-label">Booked Calls Executed</span>
+    </div>
+    <div class="result-card">
+      <span class="result-num">1.5M+</span>
+      <span class="result-label">DM Conversations Processed</span>
+    </div>
+    <div class="result-card">
+      <span class="result-num">90%+</span>
+      <span class="result-label">Show Rate Target (Full Obligation)</span>
+    </div>
+    <div class="result-card">
+      <span class="result-num">37</span>
+      <span class="result-label">Live Operational Frameworks</span>
+    </div>
+    <div class="result-card">
+      <span class="result-num">$119K</span>
+      <span class="result-label">Generated in 14 Days (B2C Case Study)</span>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IS THIS FOR -->
+<section id="who">
+  <div class="section-label">Who It's For</div>
+  <h2 class="section-title">We're not for everyone.<br>On purpose.</h2>
+  <p class="section-sub">We work with operators who have a real offer, real results, and real commitment to growth. Here's who that is.</p>
+  <div class="for-grid">
+    <div class="for-card">
+      <h3>Coaching Companies</h3>
+      <p>High-ticket programs ($5K–$50K) with proven case studies. You have leads. You need qualified calls that show up ready to buy.</p>
+    </div>
+    <div class="for-card">
+      <h3>Agency Operators</h3>
+      <p>Done-for-you services with strong results proof. You need a DM operation that runs independently without you babysitting every conversation.</p>
+    </div>
+    <div class="for-card">
+      <h3>Course Creators & Consultants</h3>
+      <p>You've built something that works. Now you need a systematic way to turn social engagement into booked calls at scale.</p>
+    </div>
+    <div class="for-card">
+      <h3>DM Setters Ready to Level Up</h3>
+      <p>You're already setting. You want to move from $2K/month to $8–$20K/month. You need a real system, not generic scripts.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 3rem;">
+    <div class="section-label" style="margin-bottom: 0.5rem;">Not For</div>
+    <div class="notfor-list">
+      <div class="notfor-item"><span class="x">✕</span> Offers without proven results to back them up</div>
+      <div class="notfor-item"><span class="x">✕</span> Anyone who wants to blast 500 people with the same opener</div>
+      <div class="notfor-item"><span class="x">✕</span> Operators who aren't willing to follow a proven system</div>
+      <div class="notfor-item"><span class="x">✕</span> Anyone looking for get-rich-quick without the work</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to run a real<br><span style="color: var(--gold)">DM setting operation?</span></h2>
+  <p>Applications take 3 minutes. We review within 48 hours. If it's a fit, we'll reach out directly.</p>
+  <a href="apply.html" class="btn-primary" style="font-size: 1rem; padding: 1rem 2.5rem;">Apply to Work With Us →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">APEX DM OPERATOR</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="apply.html">Apply</a>
+    <a href="dashboard.html">Operator Portal</a>
+  </div>
+  <div class="footer-copy">© 2025 APEX DM Operator. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

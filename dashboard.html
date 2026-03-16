@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Operator Portal | APEX DM Operator</title>
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c76a;
+    --dark: #0a0a0a;
+    --dark2: #111111;
+    --dark3: #1a1a1a;
+    --dark4: #222222;
+    --text: #e8e8e8;
+    --muted: #888;
+    --border: rgba(201,168,76,0.18);
+    --green: #3ecf8e;
+    --red: #e04040;
+    --yellow: #f5c842;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+
+  /* LOGIN GATE */
+  #loginGate {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+  }
+  .login-box {
+    background: var(--dark2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2.5rem;
+    width: 100%; max-width: 380px;
+    text-align: center;
+  }
+  .login-logo {
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 3px; color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+  .login-sub { font-size: 0.75rem; color: var(--muted); margin-bottom: 2rem; letter-spacing: 1px; }
+  .login-box h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .login-box p { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+  .login-input {
+    width: 100%;
+    background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 5px;
+    color: var(--text);
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none; text-align: center;
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: rgba(201,168,76,0.5); }
+  .login-btn {
+    background: var(--gold); color: #000;
+    border: none; width: 100%; padding: 0.8rem;
+    border-radius: 5px; font-size: 0.9rem;
+    font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .login-btn:hover { background: var(--gold-light); }
+  .login-error {
+    display: none;
+    color: var(--red); font-size: 0.8rem; margin-top: 0.5rem;
+  }
+
+  /* DASHBOARD */
+  #dashboard { display: none; }
+
+  nav {
+    background: rgba(10,10,10,0.97);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 0 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px; position: sticky; top: 0; z-index: 100;
+  }
+  .nav-left { display: flex; align-items: center; gap: 1.5rem; }
+  .dash-logo { font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; color: var(--gold); }
+  .dash-logo span { color: var(--muted); font-size: 0.7rem; }
+  .nav-tab {
+    color: var(--muted); font-size: 0.8rem; padding: 0.3rem 0.6rem;
+    border-radius: 4px; cursor: pointer; letter-spacing: 0.5px;
+    border: none; background: transparent; transition: all 0.15s;
+  }
+  .nav-tab.active, .nav-tab:hover { color: var(--gold); background: rgba(201,168,76,0.08); }
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .nav-date { font-size: 0.75rem; color: var(--muted); }
+  .logout-btn {
+    color: var(--muted); font-size: 0.75rem;
+    background: none; border: 1px solid rgba(255,255,255,0.08);
+    padding: 0.3rem 0.7rem; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .main { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+  /* TAB PANELS */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem; margin-bottom: 1.5rem;
+  }
+  .kpi-card {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.1);
+    border-radius: 6px;
+    padding: 1.2rem;
+  }
+  .kpi-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text); }
+  .kpi-target { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+  .kpi-card.good .kpi-value { color: var(--green); }
+  .kpi-card.warn .kpi-value { color: var(--yellow); }
+  .kpi-card.bad .kpi-value { color: var(--red); }
+
+  /* SECTION HEADER */
+  .sec-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .sec-title { font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.1);
+    border-radius: 6px;
+    overflow: hidden; overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+  thead tr { background: var(--dark3); }
+  thead th {
+    text-align: left; padding: 0.75rem 1rem;
+    font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid rgba(201,168,76,0.1);
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.12s;
+  }
+  tbody tr:hover { background: rgba(201,168,76,0.03); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 0.75rem 1rem; color: var(--text); vertical-align: middle; }
+  .td-muted { color: var(--muted); }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .badge-green { background: rgba(62,207,142,0.12); color: var(--green); }
+  .badge-yellow { background: rgba(245,200,66,0.12); color: var(--yellow); }
+  .badge-red { background: rgba(224,64,64,0.12); color: var(--red); }
+  .badge-blue { background: rgba(100,150,255,0.12); color: #8ab4f8; }
+  .badge-muted { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+  /* MOMENTUM DOT */
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .dot-hot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-neutral { background: var(--yellow); }
+  .dot-cold { background: var(--red); }
+
+  /* ADD ROW FORM */
+  .add-row-form {
+    background: var(--dark3);
+    border: 1px dashed rgba(201,168,76,0.2);
+    border-radius: 6px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+  .add-row-form.open { display: block; }
+  .add-row-form h4 { font-size: 0.8rem; color: var(--gold); margin-bottom: 1rem; letter-spacing: 1px; }
+  .add-row-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.7rem;
+  }
+  .add-input {
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    color: var(--text); padding: 0.55rem 0.75rem;
+    font-size: 0.82rem; font-family: inherit; outline: none;
+  }
+  .add-input:focus { border-color: rgba(201,168,76,0.4); }
+  select.add-input option { background: var(--dark2); }
+  .add-row-actions { display: flex; gap: 0.7rem; margin-top: 0.8rem; }
+  .btn-sm {
+    padding: 0.45rem 1rem; border-radius: 4px;
+    font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; border: none; letter-spacing: 0.5px;
+  }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-ghost { background: rgba(255,255,255,0.06); color: var(--muted); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+  /* TOGGLE ADD */
+  .btn-add {
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gold);
+    padding: 0.4rem 0.9rem;
+    border-radius: 4px; font-size: 0.78rem;
+    font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-add:hover { background: rgba(201,168,76,0.18); }
+
+  /* DAILY CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 0.5rem; }
+  .check-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 5px; padding: 0.75rem 1rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .check-item:hover { border-color: rgba(201,168,76,0.2); }
+  .check-item.done { opacity: 0.45; }
+  .check-item.done .check-text { text-decoration: line-through; color: var(--muted); }
+  .check-box {
+    width: 18px; height: 18px;
+    border: 1.5px solid rgba(201,168,76,0.4);
+    border-radius: 3px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .check-item.done .check-box {
+    background: var(--green); border-color: var(--green);
+    color: #000; font-size: 0.7rem;
+  }
+  .check-text { font-size: 0.85rem; }
+  .check-target { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+
+  /* NOTES */
+  .notes-area {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.1);
+    border-radius: 6px;
+    padding: 1.2rem;
+  }
+  .notes-textarea {
+    width: 100%; background: transparent;
+    border: none; outline: none;
+    color: var(--text); font-family: 'Courier New', monospace;
+    font-size: 0.85rem; line-height: 1.7;
+    resize: none; min-height: 220px;
+  }
+  .notes-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.04); }
+  .notes-hint { font-size: 0.72rem; color: var(--muted); }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* FRAMEWORKS QUICK REF */
+  .fw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+  }
+  .fw-card {
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.08);
+    border-radius: 5px; padding: 1rem;
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .fw-card:hover { border-color: rgba(201,168,76,0.3); }
+  .fw-num { font-size: 0.65rem; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
+  .fw-name { font-size: 0.88rem; font-weight: 700; margin: 0.25rem 0; }
+  .fw-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .add-row-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div id="loginGate">
+  <div class="login-box">
+    <div class="login-logo">APEX DM OPERATOR</div>
+    <div class="login-sub">OPERATOR PORTAL — INTERNAL ACCESS</div>
+    <h2>Enter Access Code</h2>
+    <p>This area is for operators only. Enter your access code to continue.</p>
+    <input type="password" id="passInput" class="login-input" placeholder="••••••••" maxlength="32" />
+    <button class="login-btn" onclick="checkPass()">Unlock Portal →</button>
+    <div class="login-error" id="loginError">Incorrect access code. Try again.</div>
+    <p style="font-size: 0.72rem; color: var(--muted); margin-top: 1.5rem;">
+      Default code: <strong style="color: var(--gold)">apex2025</strong><br>
+      Change it in the dashboard.html source file before deploying.
+    </p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <nav>
+    <div class="nav-left">
+      <div class="dash-logo">APEX <span>OPERATOR PORTAL</span></div>
+      <button class="nav-tab active" onclick="switchTab('overview', this)">Overview</button>
+      <button class="nav-tab" onclick="switchTab('pipeline', this)">Pipeline</button>
+      <button class="nav-tab" onclick="switchTab('daily', this)">Daily Ops</button>
+      <button class="nav-tab" onclick="switchTab('frameworks', this)">Frameworks</button>
+      <button class="nav-tab" onclick="switchTab('notes', this)">Notes</button>
+    </div>
+    <div class="nav-right">
+      <span class="nav-date" id="navDate"></span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <!-- OVERVIEW TAB -->
+    <div class="tab-panel active" id="tab-overview">
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card" id="kpi-prospects">
+          <div class="kpi-label">Prospects Today</div>
+          <div class="kpi-value" id="kv-prospects">0</div>
+          <div class="kpi-target">Target: 50+</div>
+        </div>
+        <div class="kpi-card" id="kpi-openers">
+          <div class="kpi-label">Openers Sent</div>
+          <div class="kpi-value" id="kv-openers">0</div>
+          <div class="kpi-target">Target: 15–20</div>
+        </div>
+        <div class="kpi-card" id="kpi-convos">
+          <div class="kpi-label">Active Convos</div>
+          <div class="kpi-value" id="kv-convos">0</div>
+          <div class="kpi-target">Target: 5+</div>
+        </div>
+        <div class="kpi-card" id="kpi-booked">
+          <div class="kpi-label">Calls Booked</div>
+          <div class="kpi-value" id="kv-booked">0</div>
+          <div class="kpi-target">Target: 1–3/day</div>
+        </div>
+        <div class="kpi-card" id="kpi-showed">
+          <div class="kpi-label">Show Rate</div>
+          <div class="kpi-value" id="kv-showed">—</div>
+          <div class="kpi-target">Target: 90%+</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <div class="sec-header">
+          <div class="sec-title">Update Today's KPIs</div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.7rem; background: var(--dark2); padding: 1rem; border-radius: 6px; border: 1px solid rgba(201,168,76,0.1);">
+          <div>
+            <label style="font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 3px;">Prospects</label>
+            <input type="number" id="inp-prospects" class="add-input" style="width: 90px;" value="0" min="0" onchange="updateKPI()" />
+          </div>
+          <div>
+            <label style="font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 3px;">Openers</label>
+            <input type="number" id="inp-openers" class="add-input" style="width: 90px;" value="0" min="0" onchange="updateKPI()" />
+          </div>
+          <div>
+            <label style="font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 3px;">Convos</label>
+            <input type="number" id="inp-convos" class="add-input" style="width: 90px;" value="0" min="0" onchange="updateKPI()" />
+          </div>
+          <div>
+            <label style="font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 3px;">Booked</label>
+            <input type="number" id="inp-booked" class="add-input" style="width: 90px;" value="0" min="0" onchange="updateKPI()" />
+          </div>
+          <div>
+            <label style="font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 3px;">Showed</label>
+            <input type="number" id="inp-showed" class="add-input" style="width: 90px;" value="0" min="0" onchange="updateKPI()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE TAB -->
+    <div class="tab-panel" id="tab-pipeline">
+      <div class="sec-header">
+        <div class="sec-title">Pipeline CRM</div>
+        <button class="btn-add" onclick="toggleAddProspect()">+ Add Prospect</button>
+      </div>
+
+      <div class="add-row-form" id="addProspectForm">
+        <h4>NEW PROSPECT</h4>
+        <div class="add-row-grid">
+          <input class="add-input" id="pName" placeholder="Name" />
+          <input class="add-input" id="pPlatform" placeholder="Platform (LinkedIn / IG)" />
+          <select class="add-input" id="pStage">
+            <option value="Engage">Engage</option>
+            <option value="Assess">Assess</option>
+            <option value="Assign">Assign</option>
+            <option value="CTA">CTA</option>
+            <option value="Obligation">Obligation</option>
+            <option value="Booked">Booked ✓</option>
+            <option value="No-show">No-show</option>
+          </select>
+          <select class="add-input" id="pMomentum">
+            <option value="Heating">🟢 Heating</option>
+            <option value="Neutral">🟡 Neutral</option>
+            <option value="Cooling">🔴 Cooling</option>
+          </select>
+          <select class="add-input" id="pType">
+            <option value="Person A">Person A</option>
+            <option value="Person B">Person B</option>
+            <option value="Loader">Loader</option>
+            <option value="Wanter">Wanter</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+          <input class="add-input" id="pNotes" placeholder="Notes / last message context" />
+        </div>
+        <div class="add-row-actions">
+          <button class="btn-sm btn-gold" onclick="addProspect()">Add to Pipeline</button>
+          <button class="btn-sm btn-ghost" onclick="toggleAddProspect()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="pipelineTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Platform</th>
+              <th>EAACO Stage</th>
+              <th>Momentum</th>
+              <th>Person Type</th>
+              <th>Notes</th>
+              <th>Added</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="pipelineBody">
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--muted); padding: 2rem; font-size: 0.85rem;">
+                No prospects yet. Add your first one above.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DAILY OPS TAB -->
+    <div class="tab-panel" id="tab-daily">
+      <div class="two-col">
+        <div>
+          <div class="sec-header">
+            <div class="sec-title">90-Minute Mindframe Checklist</div>
+            <button class="btn-add" onclick="resetChecklist()">Reset</button>
+          </div>
+          <div class="checklist" id="checklist">
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Mine 50+ prospects (batch — don't open convos yet)</span>
+              <span class="check-target">0–15 min</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Run PDOCS Layer 2 on top 5 prospects</span>
+              <span class="check-target">Research</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Send 15–20 How Hero / signal-based openers</span>
+              <span class="check-target">15–35 min</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Work all active EAACO conversations (full stack)</span>
+              <span class="check-target">35–75 min</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Run follow-up sequences (Ground + Ongoing + Harsh)</span>
+              <span class="check-target">75–85 min</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Update CRM — log all new contacts & stage changes</span>
+              <span class="check-target">85–90 min</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Run GAP Audit on any dead/stalled conversations</span>
+              <span class="check-target">Weekly</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Run full Obligation sequence for booked calls</span>
+              <span class="check-target">Ongoing</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-header">
+            <div class="sec-title">Pre-Send Checklist (Human Reasoning Stack)</div>
+          </div>
+          <div class="checklist">
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">PDOCS both layers run on this prospect?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Surface / Subtext / Root layer all read?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Responding to root layer — not surface?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">EAACO stage confirmed — not jumping ahead?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Emotional state accounted for FIRST?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Signal type read and reflected back?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">One idea per message — no stacking?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Momentum check: Heating / Neutral / Cooling?</span>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+              <div class="check-box"></div>
+              <span class="check-text">Would a real human send this as a text?</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FRAMEWORKS QUICK REF TAB -->
+    <div class="tab-panel" id="tab-frameworks">
+      <div class="sec-header">
+        <div class="sec-title">APEX System — 37 Frameworks Quick Reference</div>
+      </div>
+      <div class="fw-grid" id="fwGrid"></div>
+    </div>
+
+    <!-- NOTES TAB -->
+    <div class="tab-panel" id="tab-notes">
+      <div class="sec-header">
+        <div class="sec-title">Operator Notes / Scratch Pad</div>
+      </div>
+      <div class="notes-area">
+        <textarea class="notes-textarea" id="notesArea" placeholder="Drop conversation notes, roleplay debriefs, gap audits, KGA outputs, or anything else here. Saves automatically."></textarea>
+        <div class="notes-footer">
+          <span class="notes-hint">Auto-saves to browser storage</span>
+          <button class="btn-sm btn-ghost" onclick="clearNotes()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ======= CONFIG =======
+const ACCESS_CODE = 'apex2025'; // Change this before deploying
+
+// ======= AUTH =======
+function checkPass() {
+  const val = document.getElementById('passInput').value;
+  if (val === ACCESS_CODE) {
+    sessionStorage.setItem('apex_auth', '1');
+    showDash();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+document.getElementById('passInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPass();
+});
+function logout() {
+  sessionStorage.removeItem('apex_auth');
+  location.reload();
+}
+function showDash() {
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  init();
+}
+if (sessionStorage.getItem('apex_auth') === '1') showDash();
+
+// ======= TABS =======
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ======= DATE =======
+function setDate() {
+  const now = new Date();
+  document.getElementById('navDate').textContent = now.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+}
+
+// ======= KPI =======
+function updateKPI() {
+  const p = +document.getElementById('inp-prospects').value;
+  const o = +document.getElementById('inp-openers').value;
+  const c = +document.getElementById('inp-convos').value;
+  const b = +document.getElementById('inp-booked').value;
+  const s = +document.getElementById('inp-showed').value;
+
+  setKPI('prospects', p, [50, 30]);
+  setKPI('openers', o, [15, 8]);
+  setKPI('convos', c, [5, 2]);
+  setKPI('booked', b, [1, 0]);
+
+  const showRate = b > 0 ? Math.round((s / b) * 100) : null;
+  const kpiShowed = document.getElementById('kpi-showed');
+  document.getElementById('kv-showed').textContent = showRate !== null ? showRate + '%' : '—';
+  kpiShowed.className = 'kpi-card';
+  if (showRate === null) {}
+  else if (showRate >= 90) kpiShowed.classList.add('good');
+  else if (showRate >= 70) kpiShowed.classList.add('warn');
+  else kpiShowed.classList.add('bad');
+
+  saveKPIs({p, o, c, b, s});
+}
+function setKPI(key, val, [good, warn]) {
+  document.getElementById('kv-' + key).textContent = val;
+  const card = document.getElementById('kpi-' + key);
+  card.className = 'kpi-card';
+  if (val >= good) card.classList.add('good');
+  else if (val >= warn) card.classList.add('warn');
+  else if (val > 0) card.classList.add('bad');
+}
+function saveKPIs(data) { localStorage.setItem('apex_kpis', JSON.stringify(data)); }
+function loadKPIs() {
+  const d = JSON.parse(localStorage.getItem('apex_kpis') || '{}');
+  if (!d.p) return;
+  document.getElementById('inp-prospects').value = d.p || 0;
+  document.getElementById('inp-openers').value = d.o || 0;
+  document.getElementById('inp-convos').value = d.c || 0;
+  document.getElementById('inp-booked').value = d.b || 0;
+  document.getElementById('inp-showed').value = d.s || 0;
+  updateKPI();
+}
+
+// ======= PIPELINE =======
+let prospects = JSON.parse(localStorage.getItem('apex_pipeline') || '[]');
+function toggleAddProspect() {
+  document.getElementById('addProspectForm').classList.toggle('open');
+}
+function addProspect() {
+  const name = document.getElementById('pName').value.trim();
+  if (!name) return;
+  const p = {
+    id: Date.now(),
+    name,
+    platform: document.getElementById('pPlatform').value || 'N/A',
+    stage: document.getElementById('pStage').value,
+    momentum: document.getElementById('pMomentum').value,
+    type: document.getElementById('pType').value,
+    notes: document.getElementById('pNotes').value,
+    date: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric'})
+  };
+  prospects.push(p);
+  saveProspects();
+  renderPipeline();
+  document.getElementById('pName').value = '';
+  document.getElementById('pPlatform').value = '';
+  document.getElementById('pNotes').value = '';
+  document.getElementById('addProspectForm').classList.remove('open');
+}
+function removeProspect(id) {
+  prospects = prospects.filter(p => p.id !== id);
+  saveProspects(); renderPipeline();
+}
+function saveProspects() { localStorage.setItem('apex_pipeline', JSON.stringify(prospects)); }
+function stageBadge(s) {
+  const map = {
+    'Engage': 'badge-muted', 'Assess': 'badge-blue', 'Assign': 'badge-yellow',
+    'CTA': 'badge-yellow', 'Obligation': 'badge-green',
+    'Booked ✓': 'badge-green', 'No-show': 'badge-red'
+  };
+  return `<span class="badge ${map[s] || 'badge-muted'}">${s}</span>`;
+}
+function momDot(m) {
+  const map = {Heating: 'dot-hot', Neutral: 'dot-neutral', Cooling: 'dot-cold'};
+  return `<span class="dot ${map[m] || 'dot-neutral'}"></span>${m}`;
+}
+function renderPipeline() {
+  const tbody = document.getElementById('pipelineBody');
+  if (prospects.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem;font-size:0.85rem;">No prospects yet. Add your first one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = prospects.map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td class="td-muted">${p.platform}</td>
+      <td>${stageBadge(p.stage)}</td>
+      <td style="font-size:0.8rem">${momDot(p.momentum)}</td>
+      <td class="td-muted" style="font-size:0.8rem">${p.type}</td>
+      <td class="td-muted" style="font-size:0.78rem; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.notes || '—'}</td>
+      <td class="td-muted" style="font-size:0.78rem">${p.date}</td>
+      <td><button onclick="removeProspect(${p.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;padding:0.2rem 0.4rem;" title="Remove">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ======= CHECKLIST =======
+function toggleCheck(el) {
+  el.classList.toggle('done');
+  if (el.classList.contains('done')) el.querySelector('.check-box').textContent = '✓';
+  else el.querySelector('.check-box').textContent = '';
+}
+function resetChecklist() {
+  document.querySelectorAll('.check-item').forEach(el => {
+    el.classList.remove('done');
+    el.querySelector('.check-box').textContent = '';
+  });
+}
+
+// ======= NOTES =======
+const notesArea = document.getElementById('notesArea');
+notesArea.addEventListener('input', () => localStorage.setItem('apex_notes', notesArea.value));
+function loadNotes() { notesArea.value = localStorage.getItem('apex_notes') || ''; }
+function clearNotes() { if (confirm('Clear all notes?')) { notesArea.value = ''; localStorage.removeItem('apex_notes'); } }
+
+// ======= FRAMEWORKS =======
+const frameworks = [
+  {n:'01', name:'PDOCS Intelligence Filter', desc:'Dual-layer research protocol. Market-level + individual prospect. Never write before running this.'},
+  {n:'02', name:'Unaware Avatar System', desc:'Target symptom-level prospects in groups unrelated to the solution.'},
+  {n:'03', name:'Travis Sago Cold Outreach', desc:'Give first. Be specific. Follow the conversation. Never lead with the ask.'},
+  {n:'04', name:'How Hero Method', desc:'Find post → Like → Follow → Screenshot → Send opener WITH screenshot. Must be specific to THIS person.'},
+  {n:'05', name:'Flu Doctor Method', desc:'Symptom stack → Diagnosis → Binary choice. Never name the disease early.'},
+  {n:'06', name:'Connection Intelligence', desc:'Positive indifference. Social currency. Care deeply. Be completely detached from the yes.'},
+  {n:'07', name:'EAACO Framework', desc:'Engage → Assess → Assign → CTA → Obligation. Five-stage flow. No compressed transitions.'},
+  {n:'08', name:'3-Stage Conversation Funnel', desc:'Top (open) → Middle (relate, dig, raise standards) → Bottom (ego stroke, snatcher, book-in).'},
+  {n:'09', name:'Dunlevy Discovery Call', desc:'10-phase call OS. Pre-call mindset through ownership and close.'},
+  {n:'10', name:'Lead Personality Types', desc:'Person A / Person B / Loader / Wanter. Different identity and neuro-finance play for each.'},
+  {n:'11', name:'Objection Handling', desc:'Classify: Reflex / Brush-off / Real. Three value levers. Identity reframes for every real objection.'},
+  {n:'12', name:'Full Follow-Up System', desc:'Ground → Ongoing → Harsh. Pre-call 4-touch sequence. Long-term tracker.'},
+  {n:'13', name:'Income Architecture', desc:'$8K–$20K stack. Retainer + commission + override. Three income streams.'},
+  {n:'14', name:'90-Minute Daily Workflow', desc:'Mining → Openers → EAACO → Follow-ups → CRM. Speed to lead first.'},
+  {n:'15', name:'Golden Rules — DM Formatting', desc:'One idea per message. Max 3 lines. End with a pull. Never send before they reply.'},
+  {n:'16', name:'Real-Time Inference Engine', desc:'Surface / Subtext / Root. Respond to root. Surface engagement = surface responses.'},
+  {n:'17', name:'5 Critical Thinking Checks', desc:'Runs before every send. Self-interest, stage, loop, human pattern, root layer.'},
+  {n:'18', name:'Cause vs Effect — 3-Why Method', desc:'Ask why three times. First answer is symptom. Third is the real problem.'},
+  {n:'19', name:'Decision Architecture Under Uncertainty', desc:'When the script breaks: Acknowledge → Redirect → Reframe. Use curiosity.'},
+  {n:'20', name:'Cognitive Bias Field Guide', desc:'Prospect biases and setter biases. Unified thinking standard.'},
+  {n:'21', name:'Human Reasoning Stack', desc:'12 checkpoints. Runs before every reply in roleplay and live conversations.'},
+  {n:'22', name:'Emotional Awareness Protocol', desc:'Always ask: what is this person FEELING right now — not what are they saying?'},
+  {n:'23', name:'Identity Shifting', desc:'Six Neurological Levels. Speak at 4, 5, 6. Build the Buyer. Identity Question Stack.'},
+  {n:'24', name:'Signal Intelligence', desc:'8 signal types. Emotional Mirror Formula. Heat Hierarchy for timing.'},
+  {n:'25', name:'Conversation Momentum Intelligence', desc:'6 momentum signals. Heat Map. MIP protocol for cooling conversations.'},
+  {n:'26', name:'The ZAP', desc:'Bridge between negative mechanism and the moment it lands. By person type.'},
+  {n:'27', name:'Knowledge Gap Analysis (KGA)', desc:'4 steps: know → think they know → truth → gap. One KGA output sentence per niche.'},
+  {n:'28', name:'GAP Optimisation Loop', desc:'4 gap types: Engagement / Rapport / Frame / Conversion. Weekly audit protocol.'},
+  {n:'29', name:'7A Contrarian Framework', desc:'7 diagnostic questions for any message. Failing question = rewrite target.'},
+  {n:'30', name:'Neuro-Finance Script Architecture', desc:'3 layers: Croc Brain → Limbic → Neocortex. Never pitch in the wrong order.'},
+  {n:'31', name:'Brand > Sales Process', desc:'3 offer foundation checks before building any outreach system.'},
+  {n:'32', name:'B2C 5-Phase DM Framework', desc:'5 phases. Prospect must vocalize ownership of their problem before the set.'},
+  {n:'33', name:'B2B 4-Phase DM Framework', desc:'4 phases. ROI-first. Professional register. Identity still applies through a business lens.'},
+  {n:'34', name:'Setter KPI System', desc:'Daily targets, weekly review. Call proposal is usually the bottleneck.'},
+  {n:'35', name:'No-Show Recovery Protocol', desc:'Day-of → 24hr → by category. Prevention > recovery. Run full Obligation first.'},
+  {n:'36', name:'Setter Ramp-Up & Onboarding', desc:'4-week protocol. 10-point QC rubric. Weekly submission structure.'},
+  {n:'37', name:'AOS Client Acquisition', desc:'High-volume messenger framework. 20–30 openers/session. Voice notes every 3–5 texts.'},
+];
+function renderFrameworks() {
+  document.getElementById('fwGrid').innerHTML = frameworks.map(f => `
+    <div class="fw-card">
+      <div class="fw-num">Framework ${f.n}</div>
+      <div class="fw-name">${f.name}</div>
+      <div class="fw-desc">${f.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ======= INIT =======
+function init() {
+  setDate();
+  loadKPIs();
+  loadNotes();
+  renderPipeline();
+  renderFrameworks();
+}
+</script>
+
+</body>
+</html>
